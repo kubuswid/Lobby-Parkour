@@ -707,6 +707,18 @@ public class Query {
         }
     }
 
+    public int leaderboardCount() throws SQLException {
+        String sql = "SELECT COUNT(*) AS cnt FROM leaderboards";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("cnt");
+                }
+            }
+            return 0;
+        }
+    }
+
     public Map<Integer, String> getLeaderboardNames() throws SQLException {
         Map<Integer, String> leaderboards = new HashMap<>();
 

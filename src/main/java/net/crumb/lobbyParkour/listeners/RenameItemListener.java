@@ -119,6 +119,13 @@ public class RenameItemListener implements Listener {
             try {
                 ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
                 Query query = new Query(database.getConnection());
+
+                int lbCount = query.leaderboardCount();
+                if (lbCount >= 28) {
+                    MMUtils.sendMessage(player, "You can't have more than 28 parkours!", MessageType.ERROR);
+                    return;
+                }
+
                 if (!query.parkourExists(itemName)) {
                     MMUtils.sendMessage(player, "A parkour with that name does not exist", MessageType.ERROR);
                     return;
