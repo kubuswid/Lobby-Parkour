@@ -29,7 +29,7 @@ public class BaseCommand {
     private static final int CENTER_PX = 130;
 
     LiteralArgumentBuilder<CommandSourceStack> baseCommand = Commands.literal("lpk")
-            .requires(source -> source.getExecutor().hasPermission("ptz.admin"))
+            .requires(source -> source.getSender().hasPermission("ptz.admin"))
             .executes(ctx -> {
                 CommandSender sender = ctx.getSource().getSender();
                 if (sender instanceof Player player) {
