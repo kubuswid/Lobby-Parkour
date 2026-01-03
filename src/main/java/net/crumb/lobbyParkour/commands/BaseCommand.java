@@ -13,6 +13,7 @@ import net.crumb.lobbyParkour.systems.LeaderboardManager;
 import net.crumb.lobbyParkour.systems.LeaderboardUpdater;
 import net.crumb.lobbyParkour.utils.MMUtils;
 import net.crumb.lobbyParkour.utils.MessageType;
+import net.crumb.lobbyParkour.utils.ReloadParkour;
 import net.crumb.lobbyParkour.utils.SoundUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -30,7 +31,7 @@ public class BaseCommand {
     private static final int CENTER_PX = 130;
 
     LiteralArgumentBuilder<CommandSourceStack> baseCommand = Commands.literal("lpk")
-            .requires(source -> source.getExecutor().hasPermission("ptz.admin"))
+            .requires(source -> source.getSender().hasPermission("ptz.admin"))
             .executes(ctx -> {
                 CommandSender sender = ctx.getSource().getSender();
                 if (sender instanceof Player player) {
@@ -63,6 +64,33 @@ public class BaseCommand {
                             LeaderboardMenu.openMenu(player);
                         }
                         return Command.SINGLE_SUCCESS;
+                    })
+            )
+            .then(Commands.literal("cache")
+                    .executes(ctx -> {
+                        ctx.getSource().getSender().sendMessage(updater.getCache().toString());
+                        return 1;
+                    })
+            )
+            .then(Commands.literal("test")
+                    .then(Commands.argument("message", StringArgumentType.greedyString())
+                            .executes(ctx -> {
+                                String msg = StringArgumentType.getString(ctx, "message");
+                                CommandSender sender = ctx.getSource().getSender();
+                                if (sender instanceof Player player) {
+                                    MMUtils.sendMessage(player, msg, MessageType.NONE);
+                                }
+                                return 1;
+                            })
+                    )
+            )
+            .then(Commands.literal("reload")
+                    .executes(ctx -> {
+                        CommandSender sender = ctx.getSource().getSender();
+                        if (sender instanceof Player player) {
+                            ReloadParkour.reload(player);
+                        }
+                        return 1;
                     })
             );
 
