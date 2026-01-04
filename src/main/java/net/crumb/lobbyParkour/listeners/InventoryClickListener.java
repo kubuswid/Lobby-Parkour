@@ -220,6 +220,7 @@ public class InventoryClickListener implements Listener {
 
                     query.deleteParkour(name);
 
+                    player.getInventory().close();
                     MMUtils.sendMessage(player, "The parkour <white>"+name+"</white> has been deleted!", MessageType.INFO);
 
                 } catch (SQLException ex) {

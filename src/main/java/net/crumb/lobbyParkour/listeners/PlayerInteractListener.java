@@ -70,9 +70,10 @@ public class PlayerInteractListener implements Listener {
                 if (!isPkStart && !isPkEnd) {
                     List<Object[]> allPkCheckpoints = query.getCheckpoints();
                     final Integer[] parkourId = {null};
+
                     allPkCheckpoints.forEach(checkpoint -> {
                         if (compareLocations(LocationHelper.stringToLocation((String) checkpoint[2]), location)) {
-                            parkourId[0] = (Integer) checkpoint[1];
+                            parkourId[0] = (Integer) checkpoint[5];
                         }
                     });
 

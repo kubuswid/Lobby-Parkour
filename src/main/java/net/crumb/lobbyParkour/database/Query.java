@@ -483,7 +483,7 @@ public class Query {
 
     public List<Object[]> getCheckpoints() throws SQLException {
         List<Object[]> list = new ArrayList<>();
-        String sql = "SELECT id, cp_index, location, material, entity_uuid FROM checkpoints";
+        String sql = "SELECT id, parkour_id, cp_index, location, material, entity_uuid FROM checkpoints";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
@@ -491,7 +491,8 @@ public class Query {
                 String location = rs.getString("location");
                 String material = rs.getString("material");
                 UUID entityUUID = UUID.fromString(rs.getString("entity_uuid"));
-                list.add(new Object[]{rs.getInt("id"), cp_index, location, material, entityUUID});
+                int parkourId = rs.getInt("parkour_id");
+                list.add(new Object[]{rs.getInt("id"), cp_index, location, material, entityUUID, parkourId});
             }
         }
         return list;
