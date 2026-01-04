@@ -203,7 +203,7 @@ public class PlayerInteractListener implements Listener {
                         String timer = ParkourTimer.formatTimer(session.getElapsedSeconds(), ConfigManager.getFormat().getTimer(), player);
 
                         ItemActionHandler.registerAction(resetPkActionId, p -> {
-                            Location tpLoc = new Location(location.getWorld(), location.getX(), location.getY(), location.getZ(), player.getYaw(), player.getPitch());
+                            Location tpLoc = new Location(location.getWorld(), location.getX() + 0.5, location.getY(), location.getZ() + 0.5, player.getYaw(), player.getPitch());
                             p.teleport(tpLoc);
                             Component resetMessage = textFormatter.formatString(ConfigManager.getFormat().getResetMessage(), player, Map.of(
                                     "parkour_name", finalParkourName,
@@ -241,7 +241,7 @@ public class PlayerInteractListener implements Listener {
                                     loc = query.getStartLocation(finalParkourName);
                                 }
 
-                                Location teleportLocation = new Location(loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), player.getYaw(), player.getPitch());
+                                Location teleportLocation = new Location(loc.getWorld(), loc.getX() + 0.5, loc.getY(), loc.getZ() + 0.5, player.getYaw(), player.getPitch());
                                 player.teleport(teleportLocation);
                             } catch (SQLException ex) {
                                 MMUtils.sendMessage(player, "Could not get checkpoints from database.", MessageType.ERROR);
