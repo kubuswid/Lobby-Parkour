@@ -165,7 +165,8 @@ public class PlayerInteractListener implements Listener {
                     ex.printStackTrace();
                 }
 
-                if (parkourName == null || parkourName.isEmpty()) return;
+                if (parkourName == null) return;
+                if (parkourName.isEmpty()) return;
 
                 String finalParkourName = parkourName;
 
@@ -205,7 +206,7 @@ public class PlayerInteractListener implements Listener {
 
                         ItemActionHandler.registerAction(resetPkActionId, p -> {
                             Location tpLoc = new Location(location.getWorld(), location.getX() + 0.5, location.getY(), location.getZ() + 0.5, player.getYaw(), player.getPitch());
-                            p.teleport(tpLoc);
+                            SchedulerUtils.teleport(p, tpLoc);
                             Component resetMessage = textFormatter.formatString(ConfigManager.getFormat().getResetMessage(), player, Map.of(
                                     "parkour_name", finalParkourName,
                                     "player_name", player.getName(),
@@ -243,7 +244,7 @@ public class PlayerInteractListener implements Listener {
                                 }
 
                                 Location teleportLocation = new Location(loc.getWorld(), loc.getX() + 0.5, loc.getY(), loc.getZ() + 0.5, player.getYaw(), player.getPitch());
-                                player.teleport(teleportLocation);
+                                SchedulerUtils.teleport(player, teleportLocation);
                             } catch (SQLException ex) {
                                 MMUtils.sendMessage(player, "Could not get checkpoints from database.", MessageType.ERROR);
                             }

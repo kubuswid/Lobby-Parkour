@@ -2,12 +2,11 @@ package net.crumb.lobbyParkour.systems;
 
 import net.crumb.lobbyParkour.LobbyParkour;
 import net.crumb.lobbyParkour.utils.ConfigManager;
+import net.crumb.lobbyParkour.utils.SchedulerUtils;
 import net.crumb.lobbyParkour.utils.TextFormatter;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Map;
 
@@ -50,30 +49,27 @@ public class ParkourTimer {
         if (looping) return;
         setLooping(true);
 
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (ParkourSessionManager.getSessions().isEmpty()) {
-                    setLooping(false);
-                    cancel();
-                    return;
-                }
-
-                ParkourSessionManager.getSessions().forEach((uuid, session) -> {
-                    // Display actionbar
-                    Player player = Bukkit.getPlayer(uuid);
-                    if (player != null && player.isOnline()) {
-                        String formattedTime = formatTimer(session.getElapsedSeconds(), actionbar, player);
-                        Map<String, String> placeholders = Map.of(
-                                "parkour_name", session.getParkourName(),
-                                "player_name", player.getName()
-                        );
-                        Component finalActionbar = textFormatter.formatString(formattedTime, player, placeholders);
-                        player.sendActionBar(finalActionbar);
-                    }
-                });
+        SchedulerUtils.runTaskTimer(plugin, task -> {
+            if (ParkourSessionManager.getSessions().isEmpty()) {
+                setLooping(false);
+                task.cancel();
+                return;
             }
-        }.runTaskTimer(plugin, 0L, 1L); // 1L = alle 1 Tick
+
+            ParkourSessionManager.getSessions().forEach((uuid, session) -> {
+                // Display actionbar
+                Player player = Bukkit.getPlayer(uuid);
+                if (player != null && player.isOnline()) {
+                    String formattedTime = formatTimer(session.getElapsedSeconds(), actionbar, player);
+                    Map<String, String> placeholders = Map.of(
+                            "parkour_name", session.getParkourName(),
+                            "player_name", player.getName()
+                    );
+                    Component finalActionbar = textFormatter.formatString(formattedTime, player, placeholders);
+                    player.sendActionBar(finalActionbar);
+                }
+            });
+        }, 1L, 1L);
     }
 }
 

@@ -7,6 +7,7 @@ import net.crumb.lobbyParkour.listeners.*;
 import net.crumb.lobbyParkour.systems.LeaderboardUpdater;
 import net.crumb.lobbyParkour.utils.ConfigManager;
 import net.crumb.lobbyParkour.utils.ItemActionHandler;
+import net.crumb.lobbyParkour.utils.SchedulerUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -72,7 +73,7 @@ public final class LobbyParkour extends JavaPlugin {
         }
 
         // Delay the updater init to ensure everything is ready
-        Bukkit.getScheduler().runTask(this, () -> {
+        SchedulerUtils.runTask(this, () -> {
             LeaderboardUpdater updater = LeaderboardUpdater.getInstance();
             updater.updateCache();
             updater.updateFormat();

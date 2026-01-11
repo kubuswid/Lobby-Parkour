@@ -9,7 +9,14 @@ public class SoundUtils {
     private static final LobbyParkour plugin = LobbyParkour.getInstance();
 
     public static void playSoundSequence(Player player, Sound sound, float volume, float pitch, long delayTicks) {
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+        if (delayTicks <= 0) {
+            SchedulerUtils.runTask(plugin, player, () -> {
+                player.playSound(player.getLocation(), sound, volume, pitch);
+            });
+            return;
+        }
+
+        SchedulerUtils.runTaskLater(plugin, player, () -> {
             player.playSound(player.getLocation(), sound, volume, pitch);
         }, delayTicks);
     }

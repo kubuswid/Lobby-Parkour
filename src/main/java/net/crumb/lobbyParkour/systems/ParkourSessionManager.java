@@ -1,11 +1,11 @@
 package net.crumb.lobbyParkour.systems;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ParkourSessionManager {
-    private static final Map<UUID, ParkourSession> sessions = new HashMap<>();
+    private static final Map<UUID, ParkourSession> sessions = new ConcurrentHashMap<>();
 
     public static void startSession(UUID uuid, String parkourName) {
         sessions.put(uuid, new ParkourSession(parkourName));

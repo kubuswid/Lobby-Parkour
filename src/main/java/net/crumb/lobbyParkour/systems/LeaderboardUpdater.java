@@ -10,18 +10,17 @@ import net.crumb.lobbyParkour.database.Query;
 import net.crumb.lobbyParkour.listeners.EntityRemove;
 import net.crumb.lobbyParkour.utils.ConfigManager;
 
+import net.crumb.lobbyParkour.utils.SchedulerUtils;
 import net.crumb.lobbyParkour.utils.TextFormatter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Transformation;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -38,8 +37,8 @@ public class LeaderboardUpdater {
 
     private final Map<String, Object> cache = new ConcurrentHashMap<>();
     private final Map<String, Object> format = new ConcurrentHashMap<>();
-    private BukkitRunnable spinTask;
-    private BukkitRunnable updateTask;
+    private SchedulerUtils.Task spinTask;
+    private SchedulerUtils.Task updateTask;
     private static final LobbyParkour plugin = LobbyParkour.getInstance();
 
     public void updateCache() {
@@ -92,32 +91,34 @@ public class LeaderboardUpdater {
                     Entity entity = Bukkit.getEntity(uuid);
                     if (!(entity instanceof ItemDisplay itemDisplay)) continue;
 
-                    if (entity.isDead()) {
-                        entity.remove(); // Extra safety
-                        continue;
-                    }
+                    SchedulerUtils.runTask(plugin, entity, () -> {
+                        if (entity.isDead()) {
+                            entity.remove(); // Extra safety
+                            return;
+                        }
 
-                    ItemStack stack = itemDisplay.getItemStack();
-                    ItemMeta meta = stack.getItemMeta();
+                        ItemStack stack = itemDisplay.getItemStack();
+                        ItemMeta meta = stack.getItemMeta();
 
-                    // Remove entity if material doesn't match
-                    if (stack.getType() != expectedMaterial) {
-                        itemDisplay.remove();
-                        continue;
-                    }
+                        // Remove entity if material doesn't match
+                        if (stack.getType() != expectedMaterial) {
+                            itemDisplay.remove();
+                            return;
+                        }
 
-                    boolean hasGlint = meta.hasEnchant(Enchantment.UNBREAKING);
+                        boolean hasGlint = meta.hasEnchant(Enchantment.UNBREAKING);
 
-                    if (glintEnabled && !hasGlint) {
-                        meta.addEnchant(Enchantment.UNBREAKING, 1, true);
-                        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                        stack.setItemMeta(meta);
-                        itemDisplay.setItemStack(stack);
-                    } else if (!glintEnabled && hasGlint) {
-                        meta.removeEnchant(Enchantment.UNBREAKING);
-                        stack.setItemMeta(meta);
-                        itemDisplay.setItemStack(stack);
-                    }
+                        if (glintEnabled && !hasGlint) {
+                            meta.addEnchant(Enchantment.UNBREAKING, 1, true);
+                            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                            stack.setItemMeta(meta);
+                            itemDisplay.setItemStack(stack);
+                        } else if (!glintEnabled && hasGlint) {
+                            meta.removeEnchant(Enchantment.UNBREAKING);
+                            stack.setItemMeta(meta);
+                            itemDisplay.setItemStack(stack);
+                        }
+                    });
                 }
             }
         } else {
@@ -127,7 +128,7 @@ public class LeaderboardUpdater {
                     EntityRemove.suppress(uuid);
                     Entity entity = Bukkit.getEntity(uuid);
                     if (entity != null) {
-                        entity.remove();
+                        SchedulerUtils.runTask(plugin, entity, entity::remove);
                     }
                 }
                 updateCache();
@@ -164,9 +165,11 @@ public class LeaderboardUpdater {
                     String rawTitle = (String) format.get("title");
                     Component formattedTitle = textFormatter.formatString(rawTitle, Map.of("parkour_name", parkourName));
 
-                    if (!textDisplay.text().equals(formattedTitle)) {
-                        textDisplay.text(formattedTitle);
-                    }
+                    SchedulerUtils.runTask(plugin, textDisplay, () -> {
+                        if (!textDisplay.text().equals(formattedTitle)) {
+                            textDisplay.text(formattedTitle);
+                        }
+                    });
                 }
 
                 database.getConnection().close();
@@ -229,39 +232,43 @@ public class LeaderboardUpdater {
                     if (entity == null || entity.isDead()) continue;
                     if (!(entity instanceof org.bukkit.entity.TextDisplay textDisplay)) continue;
 
-                    if (position - 1 < times.size()) {
-                        Map.Entry<UUID, Float> timeEntry = times.get(position - 1);
-                        UUID playerUuid = timeEntry.getKey();
-                        float time = timeEntry.getValue();
+                    final List<Map.Entry<UUID, Float>> finalTimes = times;
+                    final int finalPosition = position;
+                    SchedulerUtils.runTask(plugin, entity, () -> {
+                        if (finalPosition - 1 < finalTimes.size()) {
+                            Map.Entry<UUID, Float> timeEntry = finalTimes.get(finalPosition - 1);
+                            UUID playerUuid = timeEntry.getKey();
+                            float time = timeEntry.getValue();
 
-                        String playerName = Bukkit.getOfflinePlayer(playerUuid).getName();
-                        if (playerName == null) playerName = "Steve";
+                            String playerName = Bukkit.getOfflinePlayer(playerUuid).getName();
+                            if (playerName == null) playerName = "Steve";
 
-                        String rawLine = (String) format.get("line-" + position);
-                        if (rawLine == null || rawLine.isBlank()) {
-                            rawLine = (String) format.get("default-line-style");
+                            String rawLine = (String) format.get("line-" + finalPosition);
+                            if (rawLine == null || rawLine.isBlank()) {
+                                rawLine = (String) format.get("default-line-style");
+                            }
+
+                            String formattedTime = formatTimer(time);
+                            rawLine = rawLine.replace("%timer%", formattedTime);
+
+                            Component newText = textFormatter.formatString(
+                                    rawLine,
+                                    Map.of("player_name", playerName, "position", String.valueOf(finalPosition))
+                            );
+
+                            if (!textDisplay.text().equals(newText)) {
+                                textDisplay.text(newText);
+                            }
+                        } else {
+                            Component emptyText = textFormatter.formatString(
+                                    (String) format.get("empty-line-style")
+                            );
+
+                            if (!textDisplay.text().equals(emptyText)) {
+                                textDisplay.text(emptyText);
+                            }
                         }
-
-                        String formattedTime = formatTimer(time);
-                        rawLine = rawLine.replace("%timer%", formattedTime);
-
-                        Component newText = textFormatter.formatString(
-                                rawLine,
-                                Map.of("player_name", playerName, "position", String.valueOf(position))
-                        );
-
-                        if (!textDisplay.text().equals(newText)) {
-                            textDisplay.text(newText);
-                        }
-                    } else {
-                        Component emptyText = textFormatter.formatString(
-                                (String) format.get("empty-line-style")
-                        );
-
-                        if (!textDisplay.text().equals(emptyText)) {
-                            textDisplay.text(emptyText);
-                        }
-                    }
+                    });
                 }
             }
         } catch (SQLException e) {
@@ -271,45 +278,37 @@ public class LeaderboardUpdater {
 
 
     public void startSpinning() {
-        if (!ConfigManager.getFormat().getLeaderboard().getDisplayItem().isSpinEnabled()) {
-            stopSpinning();
-            return;
-        }
-
-        if (spinTask != null) {
+        if (spinTask != null && !spinTask.isCancelled()) {
             spinTask.cancel();
         }
 
-        spinTask = new BukkitRunnable() {
-            double angle = 0.0;
+        final double[] angle = {0.0};
 
-            @Override
-            public void run() {
-                Set<UUID> uuids = new HashSet<>((List<UUID>) cache.get("itemUUID"));
+        spinTask = SchedulerUtils.runTaskTimer(plugin, task -> {
+            Set<UUID> uuids = new HashSet<>((List<UUID>) cache.get("itemUUID"));
 
-                if (uuids.isEmpty()) return;
+            if (uuids.isEmpty()) return;
 
-                angle += Math.toRadians(3.6);
-                if (angle >= Math.PI * 2) {
-                    angle -= Math.PI * 2;
-                }
+            angle[0] += Math.toRadians(3.6);
+            if (angle[0] >= Math.PI * 2) {
+                angle[0] -= Math.PI * 2;
+            }
 
-                Quaternionf rotation = new Quaternionf().rotateY((float) angle);
-                for (UUID uuid : uuids) {
-                    Entity entity = Bukkit.getEntity(uuid);
-                    if (entity instanceof ItemDisplay itemDisplay && !entity.isDead()) {
+            Quaternionf rotation = new Quaternionf().rotateY((float) angle[0]);
+            for (UUID uuid : uuids) {
+                Entity entity = Bukkit.getEntity(uuid);
+                if (entity instanceof ItemDisplay itemDisplay && !entity.isDead()) {
+                    SchedulerUtils.runTask(plugin, entity, () -> {
                         itemDisplay.setTransformation(new Transformation(
                                 new Vector3f(0.0f, 0.0f, 0.0f),
                                 rotation,
                                 new Vector3f(0.5f, 0.5f, 0.5f),
                                 new Quaternionf(0.0f, 0.0f, 0.0f, 1.0f)
                         ));
-                    }
+                    });
                 }
             }
-        };
-
-        spinTask.runTaskTimer(plugin, 0L, 1L);
+        }, 1L, 1L);
     }
 
     public void stopSpinning() {

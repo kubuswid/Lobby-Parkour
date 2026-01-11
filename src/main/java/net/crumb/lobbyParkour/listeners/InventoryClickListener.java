@@ -125,7 +125,7 @@ public class InventoryClickListener implements Listener {
                 }
 
                 if (event.isLeftClick()) {
-                    player.teleport(location);
+                    SchedulerUtils.teleport(player, location);
                 } else {
                     LeaderboardManager leaderboardManager = new LeaderboardManager();
                     leaderboardManager.deleteLeaderboard(leaderboardId);
@@ -267,7 +267,7 @@ public class InventoryClickListener implements Listener {
 
                 if (loc == null) return;
 
-                player.teleport(loc);
+                SchedulerUtils.teleport(player, loc);
                 MMUtils.sendMessage(player, "You have been teleported to the start of <white>"+name+"</white>!", MessageType.INFO);
             }
 
