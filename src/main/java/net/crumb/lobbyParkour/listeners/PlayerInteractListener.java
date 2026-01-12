@@ -176,7 +176,8 @@ public class PlayerInteractListener implements Listener {
                     ParkourTimer.start();
                     // If player is already doing parkour, reset the timer to 0s
                     if (ParkourSessionManager.isInSession(player.getUniqueId())) {
-                        // Reset session
+                        ParkourSession oldSession = ParkourSessionManager.getSession(player.getUniqueId());
+                        restoreInventory(player, oldSession);
                         ParkourSessionManager.endSession(player.getUniqueId());
                     }
 
@@ -216,7 +217,8 @@ public class PlayerInteractListener implements Listener {
                         });
 
                         ItemActionHandler.registerAction(leavePkActionId, p -> {
-                            p.getInventory().clear();
+                            restoreInventory(p, ParkourSessionManager.getSession(player.getUniqueId()));
+
                             if (ParkourSessionManager.isInSession(player.getUniqueId())) {
                                 ParkourSessionManager.endSession(player.getUniqueId());
 
@@ -255,8 +257,20 @@ public class PlayerInteractListener implements Listener {
                         ItemStack leaveItem = ActionItemMaker.createItem("minecraft:red_bed", 1, "<red>Leave", emptyLore, leavePkActionId);
                         ItemStack lastCpItem = ActionItemMaker.createItem("minecraft:heavy_weighted_pressure_plate", 1, "<green>Last Checkpoint", emptyLore, lastCheckpointActionId);
 
-                        // Apply inventory layout
+                        // Save inventory before clearing
+                        Map<Integer, ItemStack> saveInventory = new HashMap<>();
+                        for (int i = 0; i < 36; i++) {
+                            saveInventory.put(i, player.getInventory().getItem(i));
+                        }
+                        saveInventory.put(40, player.getInventory().getItemInOffHand());
+                        saveInventory.put(41, player.getInventory().getHelmet());
+                        saveInventory.put(42, player.getInventory().getChestplate());
+                        saveInventory.put(43, player.getInventory().getLeggings());
+                        saveInventory.put(44, player.getInventory().getBoots());
+                        session.setInventory(saveInventory);
                         player.getInventory().clear();
+
+                        // Apply inventory layout
                         ItemMaker.giveItemToPlayer(player, restItem, 4);
                         ItemMaker.giveItemToPlayer(player, leaveItem, 5);
                         ItemMaker.giveItemToPlayer(player, lastCpItem, 3);
@@ -282,7 +296,9 @@ public class PlayerInteractListener implements Listener {
                         float timerMillis = ParkourSessionManager.getSession(player.getUniqueId()).getElapsedSeconds();
                         String timer = ParkourTimer.formatTimer(timerMillis, ConfigManager.getFormat().getTimer(), player);
                         ParkourSessionManager.endSession(player.getUniqueId()); // End session
-                        player.getInventory().clear();
+
+                        // Restore inventory
+                        restoreInventory(player, session);
 
                         try {
                             ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
@@ -385,5 +401,24 @@ public class PlayerInteractListener implements Listener {
                 loc1.getBlockX() == loc2.getBlockX() &&
                 loc1.getBlockY() == loc2.getBlockY() &&
                 loc1.getBlockZ() == loc2.getBlockZ();
+    }
+
+    private void restoreInventory(Player player, ParkourSession session) {
+        if (player == null) return;
+        if (session == null || session.getInventory() == null || session.getInventory().isEmpty()) {
+            return;
+        }
+
+        // Restore inventory
+        player.getInventory().clear();
+        for (int i = 0; i < 36; i++) {
+            player.getInventory().setItem(i, session.getInventory().get(i));
+        }
+        player.getInventory().setItemInOffHand(session.getInventory().get(40));
+        player.getInventory().setHelmet(session.getInventory().get(41));
+        player.getInventory().setChestplate(session.getInventory().get(42));
+        player.getInventory().setLeggings(session.getInventory().get(43));
+        player.getInventory().setBoots(session.getInventory().get(44));
+        session.getInventory().clear();
     }
 }
