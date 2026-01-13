@@ -403,7 +403,7 @@ public class PlayerInteractListener implements Listener {
                 loc1.getBlockZ() == loc2.getBlockZ();
     }
 
-    private void restoreInventory(Player player, ParkourSession session) {
+    public static void restoreInventory(Player player, ParkourSession session) {
         if (player == null) return;
         if (session == null || session.getInventory() == null || session.getInventory().isEmpty()) {
             return;
