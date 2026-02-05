@@ -1,7 +1,7 @@
 package net.crumb.lobbyParkour.utils;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -13,7 +13,7 @@ import java.util.Map;
 public class TextFormatter {
 
     /**
-     * Formats a string with custom placeholders, PlaceholderAPI (if enabled), and MiniMessage.
+     * Formats a string with custom placeholders, PlaceholderAPI (if enabled), and legacy color codes.
      *
      * @param text   The input string with placeholders.
      * @param player The player (can be OfflinePlayer or Player).
@@ -37,7 +37,7 @@ public class TextFormatter {
             formatted = PlaceholderAPI.setPlaceholders(player, formatted);
         }
 
-        return MiniMessage.miniMessage().deserialize(formatted);
+        return LegacyComponentSerializer.legacyAmpersand().deserialize(formatted);
     }
 
 

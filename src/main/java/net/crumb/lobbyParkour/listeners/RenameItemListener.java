@@ -7,7 +7,7 @@ import net.crumb.lobbyParkour.guis.MapListMenu;
 import net.crumb.lobbyParkour.systems.LeaderboardManager;
 import net.crumb.lobbyParkour.utils.*;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.World;
@@ -61,19 +61,18 @@ public class RenameItemListener implements Listener {
         if (e.getSlot() != 2) return;
 
         AnvilView inventory = (AnvilView) e.getView();
-        String itemName = PlainTextComponentSerializer.plainText().serialize(MiniMessage.miniMessage().deserialize(inventory.getRenameText()));
-        String oldName = inventory.getItem(0).getItemMeta().getDisplayName();
+        String itemName = ChatColor.stripColor(inventory.getRenameText());
+        String oldName = ChatColor.stripColor(inventory.getItem(0).getItemMeta().getDisplayName());
 
         player.closeInventory();
 
         if (title.equalsIgnoreCase("Rename Parkour")) {
             try {
-                ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                Query query = new Query(database.getConnection());
+                Query query = new Query(plugin.getParkoursDatabase().getConnection());
 
                 if (query.parkourExists(itemName)) {
                     MMUtils.sendMessage(player, "A parkour with the same already exists!", MessageType.ERROR);
-                    player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0f, 1.0f);
+                    SoundUtils.playConfigSound(player, ConfigManager.getSounds().getError(), 1.0f, 1.0f);
                     player.closeInventory();
                     return;
                 }
@@ -106,9 +105,9 @@ public class RenameItemListener implements Listener {
                 endTextDisplay.text(endText);
 
                 updateCheckpoints(itemName);
-                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
+                SoundUtils.playConfigSound(player, ConfigManager.getSounds().getClick(), 1.1f, 2.0f);
 
-                MMUtils.sendMessage(player, "The parkour <white>"+oldName+"</white> has been renamed to <white>"+itemName+"</white>!", MessageType.INFO);
+                MMUtils.sendMessage(player, "The parkour &f"+oldName+"&a has been renamed to &f"+itemName+"&a!", MessageType.INFO);
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
@@ -117,8 +116,7 @@ public class RenameItemListener implements Listener {
         }
         else if (title.equalsIgnoreCase("Enter Parkour Name")) {
             try {
-                ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                Query query = new Query(database.getConnection());
+                Query query = new Query(plugin.getParkoursDatabase().getConnection());
 
                 int lbCount = query.leaderboardCount();
                 if (lbCount >= 28) {
@@ -139,7 +137,7 @@ public class RenameItemListener implements Listener {
                 LeaderboardManager leaderboardManager = new LeaderboardManager();
                 leaderboardManager.spawnLeaderboard(lbLocation, itemName);
 
-                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
+                SoundUtils.playConfigSound(player, ConfigManager.getSounds().getClick(), 1.1f, 2.0f);
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
@@ -170,8 +168,7 @@ public class RenameItemListener implements Listener {
 
     public static void updateCheckpoints(String parkourName) {
         try {
-            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-            Query query = new Query(database.getConnection());
+            Query query = new Query(plugin.getParkoursDatabase().getConnection());
 
             int parkourId = query.getParkourIdFromName(parkourName);
             List<Object[]> checkpoints = query.getCheckpoints(parkourId);

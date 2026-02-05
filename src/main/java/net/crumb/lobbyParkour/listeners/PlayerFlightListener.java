@@ -19,7 +19,7 @@ public class PlayerFlightListener implements Listener {
             if (session == null) return;
 
             ParkourSessionManager.endSession(player.getUniqueId());
-            MMUtils.sendMessage(player, "<red>You have ended your parkour session by flying.</red>");
+            MMUtils.sendMessage(player, "&cYou have ended your parkour session by flying.");
             player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 0.9f, 1.2f);
             player.getInventory().clear();
         }

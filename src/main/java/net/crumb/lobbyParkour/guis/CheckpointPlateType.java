@@ -8,7 +8,7 @@ import net.crumb.lobbyParkour.utils.LocationHelper;
 import net.crumb.lobbyParkour.utils.PlateType;
 import net.crumb.lobbyParkour.utils.PressurePlates;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -24,17 +24,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CheckpointPlateType {
-    private static final MiniMessage miniMessage = MiniMessage.miniMessage();
+    private static final LegacyComponentSerializer lcs = LegacyComponentSerializer.legacyAmpersand();
     private static final LobbyParkour plugin = LobbyParkour.getInstance();
 
     public static void openMenu(Player player, String mapName, PlateType menuType, Location location) {
         if (!player.hasPermission("lpk.admin")) return;
-        Inventory gui = Bukkit.createInventory(null, 9 * 5, miniMessage.deserialize("<bold><gradient:#2200cc:#5e43e6>Change Checkpoint Type<reset>"));
+        Inventory gui = Bukkit.createInventory(null, 9 * 5, lcs.deserialize("&9&lChange Checkpoint Type"));
         List<String> emptyLore = new ArrayList<>();
 
         ItemStack background = ItemMaker.createItem("minecraft:blue_stained_glass_pane", 1, "", emptyLore);
-        ItemStack backArrow = ItemMaker.createItem("minecraft:arrow", 1, "<green>Back", List.of("<gray>Previous page"));
-        ItemStack closeButton = ItemMaker.createItem("minecraft:barrier", 1, "<red>Close", emptyLore);
+        ItemStack backArrow = ItemMaker.createItem("minecraft:arrow", 1, "&aBack", List.of("&7Previous page"));
+        ItemStack closeButton = ItemMaker.createItem("minecraft:barrier", 1, "&cClose", emptyLore);
 
         // Make secret info item
         ItemStack secretItem = new ItemStack(Material.BLUE_STAINED_GLASS_PANE, 1);
@@ -50,8 +50,7 @@ public class CheckpointPlateType {
         ItemStack currentType = null;
 
         try {
-            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-            Query query = new Query(database.getConnection());
+            Query query = new Query(plugin.getParkoursDatabase().getConnection());
 
             if (menuType == PlateType.CHECKPOINT) {
                 currentType = query.getCheckpointType(LocationHelper.locationToString(location));
@@ -71,8 +70,8 @@ public class CheckpointPlateType {
             ItemStack plateItem = ItemMaker.createItem(
                     plate,
                     1,
-                    "<green>" + PressurePlates.formatPlateName(plate),
-                    List.of("<yellow>Click to select!")
+                    "&a" + PressurePlates.formatPlateName(plate),
+                    List.of("&eClick to select!")
             );
 
             if (currentType != null && plateItem.getType().equals(currentType.getType())) {

@@ -19,15 +19,23 @@ public class ConfigManager {
         return new Settings();
     }
 
+    public static Messages getMessages() {
+        return new Messages();
+    }
+
+    public static Sounds getSounds() {
+        return new Sounds();
+    }
+
     public static class Format {
         private final String path = "formatting.";
 
         public String getStartPlate() {
-            return config.getString("formatting.start-plate", "<green>\u2691</green> <white>%parkour_name%</white>");
+            return config.getString("formatting.start-plate", "&a⚑ &f%parkour_name%");
         }
 
         public String getEndPlate() {
-            return config.getString("formatting.end-plate", "<red>\u2691</red> <white>%parkour_name%</white>");
+            return config.getString("formatting.end-plate", "&c⚑ &f%parkour_name%");
         }
 
         public String getCheckpointPlate() {
@@ -63,7 +71,7 @@ public class ConfigManager {
         }
 
         public String getActionBar() {
-            return config.getString("formatting.action-bar", "<color:#7ae0ff>%timer%</color> <color:#39aacc>\u231a</color>   <dark_gray>|</dark_gray>   <color:#54ff7f><color:#57ff65>%checkpoint%</color></color><color:#b8b8b8>/%checkpoint_total%</color> <green>\u2691</green>");
+            return config.getString("formatting.action-bar", "&b%timer% &3⌚   &8|   &a&a%checkpoint%&7/%checkpoint_total% &a⚑");
         }
 
         public String getCheckpointSkipMessage() {
@@ -125,14 +133,14 @@ public class ConfigManager {
                 }
 
                 public Material getItem() {
-                    String itemName = config.getString(this.path + "item", "minecraft:clock")
+                    String itemName = config.getString(this.path + "item", "minecraft:stone")
                             .replace("minecraft:", "")
                             .toUpperCase();
 
                     Material material = Material.matchMaterial(itemName);
 
                     // Fallback if the material doesn't exist
-                    return (material != null) ? material : Material.CLOCK;
+                    return (material != null) ? material : Material.STONE;
                 }
 
                 public boolean hasEnchantGlint() {
@@ -147,15 +155,96 @@ public class ConfigManager {
     }
 
     public static class Settings {
-        private final String path = "setings.";
-
         public int getLeaderboardUpdateRate() {
-            return config.getInt("setings.leaderboard-update", 1);
+            return config.getInt("settings.leaderboard-update", 1);
         }
 
         public int getLeaderboardQueryRate() {
-            return config.getInt("setings.leaderboard-query-update", 1);
+            return config.getInt("settings.leaderboard-query-update", 1);
+        }
+    }
+
+    public static class Messages {
+        public String getPrefixInfo() {
+            return config.getString("messages.prefix-info", "&9ⓘ ");
+        }
+
+        public String getPrefixWarning() {
+            return config.getString("messages.prefix-warning", "&e⚠ ");
+        }
+
+        public String getPrefixError() {
+            return config.getString("messages.prefix-error", "&c☒ ");
+        }
+
+        public String getPrefixDebug() {
+            return config.getString("messages.prefix-debug", "&d? ");
+        }
+
+        public String getColorInfo() {
+            return config.getString("messages.color-info", "&a");
+        }
+
+        public String getColorWarning() {
+            return config.getString("messages.color-warning", "&e");
+        }
+
+        public String getColorError() {
+            return config.getString("messages.color-error", "&c");
+        }
+
+        public String getColorDebug() {
+            return config.getString("messages.color-debug", "&f");
+        }
+    }
+
+    public static class Sounds {
+        public String getParkourStart() {
+            return config.getString("sounds.parkour-start", "BLOCK_NOTE_BLOCK_PLING");
+        }
+
+        public String getParkourEnd() {
+            return config.getString("sounds.parkour-end", "BLOCK_NOTE_BLOCK_PLING");
+        }
+
+        public String getCheckpoint() {
+            return config.getString("sounds.checkpoint", "BLOCK_NOTE_BLOCK_PLING");
+        }
+
+        public String getError() {
+            return config.getString("sounds.error", "BLOCK_ANVIL_LAND");
+        }
+
+        public String getClick() {
+            return config.getString("sounds.click", "BLOCK_NOTE_BLOCK_PLING");
+        }
+
+        public String getFinish1() {
+            return config.getString("sounds.finish-1", "BLOCK_NOTE_BLOCK_PLING");
+        }
+
+        public String getFinish2() {
+            return config.getString("sounds.finish-2", "BLOCK_NOTE_BLOCK_PLING");
+        }
+
+        public String getFinish3() {
+            return config.getString("sounds.finish-3", "BLOCK_NOTE_BLOCK_PLING");
+        }
+
+        public String getReset() {
+            return config.getString("sounds.reset", "BLOCK_NOTE_BLOCK_PLING");
+        }
+
+        public String getCancel() {
+            return config.getString("sounds.cancel", "ENTITY_ENDERMAN_TELEPORT");
+        }
+
+        public String getChestOpen() {
+            return config.getString("sounds.chest-open", "BLOCK_CHEST_OPEN");
+        }
+
+        public String getLevelUp() {
+            return config.getString("sounds.level-up", "ENTITY_PLAYER_LEVELUP");
         }
     }
 }
-

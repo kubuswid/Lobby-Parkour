@@ -1,9 +1,12 @@
 package net.crumb.lobbyParkour.guis;
 
+import net.crumb.lobbyParkour.LobbyParkour;
+import net.crumb.lobbyParkour.database.ParkoursDatabase;
+import net.crumb.lobbyParkour.database.Query;
 import net.crumb.lobbyParkour.utils.ItemMaker;
 import net.crumb.lobbyParkour.utils.LocationHelper;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -11,22 +14,25 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CheckpointEditMenu {
-    private static final MiniMessage miniMessage = MiniMessage.miniMessage();
+    private static final LegacyComponentSerializer lcs = LegacyComponentSerializer.legacyAmpersand();
+    private static final LobbyParkour plugin = LobbyParkour.getInstance();
+
     public static void openMenu(Player player, String parkourName, Location location) {
         if (!player.hasPermission("lpk.admin")) return;
-        Inventory gui = Bukkit.createInventory(null, 9 * 3, miniMessage.deserialize("<bold><gradient:#2200cc:#5e43e6>Manage Checkpoint<reset>"));
+        Inventory gui = Bukkit.createInventory(null, 9 * 3, lcs.deserialize("&9&lManage Checkpoint"));
         List<String> emptyLore = new ArrayList<>();
 
         ItemStack background = ItemMaker.createItem("minecraft:blue_stained_glass_pane", 1, "", emptyLore);
-        ItemStack backArrow = ItemMaker.createItem("minecraft:arrow", 1, "<green>Back", List.of("<gray>Previous page"));
-        ItemStack closeButton = ItemMaker.createItem("minecraft:barrier", 1, "<red>Close", emptyLore);
-        ItemStack deleteButton = ItemMaker.createItem("minecraft:tnt", 1, "<red>Delete Checkpoint", List.of("<yellow><bold>WARNING! <reset><!italic><yellow>Action can not be undone!", "<yellow>Click to delete!"));
-        ItemStack changeCheckpointType = ItemMaker.createItem("minecraft:light_weighted_pressure_plate", 1, "<green>Change Type", List.of("<yellow>Click to change!"));
-        ItemStack relocateCheckpoint = ItemMaker.createItem("minecraft:compass", 1, "<green>Relocate Checkpoint", List.of("<yellow>Click to relocate!"));
+        ItemStack backArrow = ItemMaker.createItem("minecraft:arrow", 1, "&aBack", List.of("&7Previous page"));
+        ItemStack closeButton = ItemMaker.createItem("minecraft:barrier", 1, "&cClose", emptyLore);
+        ItemStack deleteButton = ItemMaker.createItem("minecraft:tnt", 1, "&cDelete Checkpoint", List.of("&e&lWARNING! &eAction can not be undone!", "&eClick to delete!"));
+        ItemStack changeCheckpointType = ItemMaker.createItem("minecraft:light_weighted_pressure_plate", 1, "&aChange Type", List.of("&eClick to change!"));
+        ItemStack relocateCheckpoint = ItemMaker.createItem("minecraft:compass", 1, "&aRelocate Checkpoint", List.of("&eClick to relocate!"));
         ItemStack secretItem = ItemMaker.createItem("minecraft:blue_stained_glass_pane", 1, "", emptyLore);
 
         ItemMeta meta = secretItem.getItemMeta();

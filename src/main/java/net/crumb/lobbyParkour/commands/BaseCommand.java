@@ -14,9 +14,10 @@ import net.crumb.lobbyParkour.systems.LeaderboardUpdater;
 import net.crumb.lobbyParkour.utils.MMUtils;
 import net.crumb.lobbyParkour.utils.MessageType;
 import net.crumb.lobbyParkour.utils.ReloadParkour;
+import net.crumb.lobbyParkour.utils.ConfigManager;
 import net.crumb.lobbyParkour.utils.SoundUtils;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
@@ -26,7 +27,7 @@ import java.util.List;
 
 public class BaseCommand {
     private final LobbyParkour plugin = LobbyParkour.getInstance();
-    private static final MiniMessage mm = MiniMessage.miniMessage();
+    private static final LegacyComponentSerializer lcs = LegacyComponentSerializer.legacyAmpersand();
     private static final LeaderboardUpdater updater = LeaderboardUpdater.getInstance();
     private static final int CENTER_PX = 130;
 
@@ -42,9 +43,9 @@ public class BaseCommand {
             .then(Commands.literal("help")
                     .executes(ctx -> {
                         CommandSender sender = ctx.getSource().getSender();
-                        sender.sendMessage(mm.deserialize("<aqua>/lpk <gray>- Opens the main menu"));
-                        sender.sendMessage(mm.deserialize("<aqua>/lpk credits <gray>- Shows a credits message"));
-                        sender.sendMessage(mm.deserialize("<aqua>/lpk help <gray>- Shows a list of available commands"));
+                        sender.sendMessage(lcs.deserialize("&b/lpk &7- Opens the main menu"));
+                        sender.sendMessage(lcs.deserialize("&b/lpk credits &7- Shows a credits message"));
+                        sender.sendMessage(lcs.deserialize("&b/lpk help &7- Shows a list of available commands"));
                         return Command.SINGLE_SUCCESS;
                     })
             )
@@ -62,7 +63,12 @@ public class BaseCommand {
                         CommandSender sender = ctx.getSource().getSender();
                         if (sender instanceof Player player) {
                             MMUtils.sendMessage(player, "This feature is currently unavailable", MessageType.ERROR);
-                            SoundUtils.playSoundSequence(player, Sound.BLOCK_ANVIL_LAND, 1.0f, 1.1f, 0);
+                            try {
+                                Sound sound = Sound.valueOf(ConfigManager.getSounds().getError());
+                                SoundUtils.playSoundSequence(player, sound, 1.0f, 1.1f, 0);
+                            } catch (IllegalArgumentException ignored) {
+                                SoundUtils.playSoundSequence(player, Sound.BLOCK_ANVIL_LAND, 1.0f, 1.1f, 0);
+                            }
                             // LeaderboardMenu.openMenu(player);
                         }
                         return Command.SINGLE_SUCCESS;
@@ -106,59 +112,35 @@ public class BaseCommand {
         
     private void sendCredits(Player player) {
         List<String> lines = List.of(
-                "<gradient:#d81bf5:#fa2dc3><st>                                                        </gradient>",
-                "    <color:#d81bf5>⭐ <bold><gradient:#d81bf5:#fa2dc3>ʟᴏʙʙʏ ᴘᴀʀᴋᴏᴜʀ</gradient> <reset><color:#fa2dc3>⭐",
+                "&d&m                                                        ",
+                "    &d⭐ &l&dʟᴏʙʙʏ ᴘᴀʀᴋᴏᴜʀ &r&d⭐",
                 "",
-                "    <gray>Brought to you by:</gray>  <gradient:#ffa300:#ff0500>crumb",
-                "    <gray>Developed by:</gray> Kalbskinder <gray>&</gray> ZetMine",
+                "    &7Brought to you by:  &6crumb",
+                "    &7Developed by: Kalbskinder &7& ZetMine",
                 "",
-                "    <dark_gray>»</dark_gray> Join us at <dark_gray>«</dark_gray>",
-                "        <dark_gray>→</dark_gray> <click:OPEN_URL:https://discord.gg/8xQXBbCa8R><hover:show_text:'<blue>Click to join!'><blue>https://discord.gg/8xQXBbCa8R    ",
-                "<gradient:#d81bf5:#fa2dc3><st>                                                        </gradient>"
+                "    &8» &7Join us at &8«",
+                "        &8→ &bhttps://discord.gg/8xQXBbCa8R",
+                "&d&m                                                        "
         );
 
 
         lines.forEach(line -> {
-            MMUtils.sendMessage(player, deserializeCentered(line));
+            MMUtils.sendMessage(player, line);
         });
 
-        SoundUtils.playSoundSequence(player, Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1f, 0);
-        SoundUtils.playSoundSequence(player, Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1.1f, 3);
-        SoundUtils.playSoundSequence(player, Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1.2f, 6);
-        SoundUtils.playSoundSequence(player, Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1.3f, 9);
-        SoundUtils.playSoundSequence(player, Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1.4f, 12);
-    }
-
-    public static String deserializeCentered(String input) {
-        if (input == null || !input.startsWith("<center>")) {
-            return input;
+        try {
+            Sound sound = Sound.valueOf(ConfigManager.getSounds().getLevelUp());
+            SoundUtils.playSoundSequence(player, sound, 0.7f, 1f, 0);
+            SoundUtils.playSoundSequence(player, sound, 0.7f, 1.1f, 3);
+            SoundUtils.playSoundSequence(player, sound, 0.7f, 1.2f, 6);
+            SoundUtils.playSoundSequence(player, sound, 0.7f, 1.3f, 9);
+            SoundUtils.playSoundSequence(player, sound, 0.7f, 1.4f, 12);
+        } catch (IllegalArgumentException ignored) {
+            SoundUtils.playSoundSequence(player, Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1f, 0);
+            SoundUtils.playSoundSequence(player, Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1.1f, 3);
+            SoundUtils.playSoundSequence(player, Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1.2f, 6);
+            SoundUtils.playSoundSequence(player, Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1.3f, 9);
+            SoundUtils.playSoundSequence(player, Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1.4f, 12);
         }
-
-        String raw = input.replaceFirst("<center>", "");
-        Component component = mm.deserialize(raw);
-
-        String plainText = PlainTextComponentSerializer.plainText().serialize(component);
-
-        int pixelLength = getPixelLength(Component.text(plainText));
-        int spaces = Math.max(0, (CENTER_PX - pixelLength / 2) / 4);
-
-        return " ".repeat(spaces) + mm.serialize(component);
-    }
-        
-    private static int getPixelLength(Component component) {
-        String plain = MiniMessage.miniMessage().serialize(component).replaceAll("<[^>]+>", ""); // Ignore minimessage tags
-        int length = 0;
-
-        for (char c : plain.toCharArray()) {
-            int charWidth = switch (c) {
-                case 'i', 'l', '.', ',', ':' -> 2;
-                case 't', 'f' -> 4;
-                case 'w', 'm', 'W', 'M' -> 7;
-                case ' ' -> 4;
-                default -> 5;
-            };
-            length += charWidth + 1;
-        }
-        return length;
     }
 }

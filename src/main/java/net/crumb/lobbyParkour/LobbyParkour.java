@@ -23,6 +23,10 @@ public final class LobbyParkour extends JavaPlugin {
         return instance;
     }
 
+    public ParkoursDatabase getParkoursDatabase() {
+        return parkoursDatabase;
+    }
+
     private void startUpMessage() {
         Logger logger = Logger.getLogger("Lobby-Parkour");
         logger.info("-------------------------------");

@@ -20,4 +20,11 @@ public class SoundUtils {
             player.playSound(player.getLocation(), sound, volume, pitch);
         }, delayTicks);
     }
+
+    public static void playConfigSound(Player player, String configSound, float volume, float pitch) {
+        try {
+            Sound sound = Sound.valueOf(configSound);
+            player.playSound(player.getLocation(), sound, volume, pitch);
+        } catch (IllegalArgumentException ignored) {}
+    }
 }
