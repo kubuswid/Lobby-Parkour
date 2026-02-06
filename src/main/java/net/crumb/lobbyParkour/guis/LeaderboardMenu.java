@@ -5,7 +5,7 @@ import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
 import net.crumb.lobbyParkour.utils.ItemMaker;
 import net.crumb.lobbyParkour.utils.LocationHelper;
-import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -18,18 +18,18 @@ import java.util.List;
 import java.util.Map;
 
 public class LeaderboardMenu {
-    private static final MiniMessage miniMessage = MiniMessage.miniMessage();
+    private static final LegacyComponentSerializer lcs = LegacyComponentSerializer.legacyAmpersand();
     private static final LobbyParkour plugin = LobbyParkour.getInstance();
 
     public static void openMenu(Player player) {
         if (!player.hasPermission("lpk.admin")) return;
-        Inventory gui = Bukkit.createInventory(null, 9 * 6, miniMessage.deserialize("<bold><gradient:#369e36:#2bbf11>Leaderboard List<reset>"));
+        Inventory gui = Bukkit.createInventory(null, 9 * 6, lcs.deserialize("&a&lLeaderboard List"));
         List<String> emptyLore = new ArrayList<>();
 
         ItemStack background = ItemMaker.createItem("minecraft:lime_stained_glass_pane", 1, "", emptyLore);
-        ItemStack backArrow = ItemMaker.createItem("minecraft:arrow", 1, "<green>Back", List.of("<gray>Previous page"));
-        ItemStack closeButton = ItemMaker.createItem("minecraft:barrier", 1, "<red>Close", emptyLore);
-        ItemStack newLeaderboard = ItemMaker.createItem("minecraft:name_tag", 1, "<green>New Leaderboard", List.of("<yellow>Click to setup!"));
+        ItemStack backArrow = ItemMaker.createItem("minecraft:arrow", 1, "&aBack", List.of("&7Previous page"));
+        ItemStack closeButton = ItemMaker.createItem("minecraft:barrier", 1, "&cClose", emptyLore);
+        ItemStack newLeaderboard = ItemMaker.createItem("minecraft:name_tag", 1, "&aNew Leaderboard", List.of("&eClick to setup!"));
 
         int size = gui.getSize();
 
@@ -50,8 +50,7 @@ public class LeaderboardMenu {
         gui.setItem(49, closeButton);
 
         try {
-            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-            Query query = new Query(database.getConnection());
+            Query query = new Query(plugin.getParkoursDatabase().getConnection());
             Map<Integer, String> leaderboardNames = query.getLeaderboardNames();
             List<Location> leaderboardLocations = query.getLeaderboardLocations();
 
@@ -72,8 +71,8 @@ public class LeaderboardMenu {
                 ItemStack mapItem = ItemMaker.createItem(
                         "minecraft:name_tag",
                         1,
-                        "<green>" + entry.getValue(),
-                        List.of("<dark_gray>Location: " + locString, "<yellow>Left-Click to teleport!", "<yellow>Right-Click to delete!")
+                        "&a" + entry.getValue(),
+                        List.of("&8Location: " + locString, "&eLeft-Click to teleport!", "&eRight-Click to delete!")
                 );
 
                 gui.setItem(contentSlots[index], mapItem);

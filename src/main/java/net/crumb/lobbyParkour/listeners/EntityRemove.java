@@ -6,9 +6,9 @@ import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
 import net.crumb.lobbyParkour.systems.LeaderboardUpdater;
 import net.crumb.lobbyParkour.utils.ConfigManager;
+import net.crumb.lobbyParkour.utils.SchedulerUtils;
 import net.crumb.lobbyParkour.utils.TextFormatter;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -65,8 +65,7 @@ public class EntityRemove implements Listener {
         }
 
         try {
-            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-            Query query = new Query(database.getConnection());
+            Query query = new Query(plugin.getParkoursDatabase().getConnection());
 
             // START PLATE
             String mapName = query.getMapNameByStartUuid(uuid);
@@ -76,11 +75,17 @@ public class EntityRemove implements Listener {
                 Component startText = textFormatter.formatString(ConfigManager.getFormat().getStartPlate(), Map.of("parkour_name", mapName));
                 Location textDisplayLocation = loc.clone().add(0.5, 1.0, 0.5);
 
-                TextDisplay newStart = world.spawn(textDisplayLocation, TextDisplay.class, td -> {
-                    td.text(startText);
-                    td.setBillboard(Display.Billboard.CENTER);
-                });
-                query.updateStartEntityUuid(mapName, newStart.getUniqueId());
+                SchedulerUtils.runTaskLater(plugin, () -> {
+                    TextDisplay newStart = world.spawn(textDisplayLocation, TextDisplay.class, td -> {
+                        td.text(startText);
+                        td.setBillboard(Display.Billboard.CENTER);
+                    });
+                    try {
+                        new Query(plugin.getParkoursDatabase().getConnection()).updateStartEntityUuid(mapName, newStart.getUniqueId());
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }, 1L);
                 return;
             }
 
@@ -92,11 +97,17 @@ public class EntityRemove implements Listener {
                 Component endText = textFormatter.formatString(ConfigManager.getFormat().getEndPlate(), Map.of("parkour_name", mapName2));
                 Location textDisplayLocation = loc.clone().add(0.5, 1.0, 0.5);
 
-                TextDisplay newEnd = world.spawn(textDisplayLocation, TextDisplay.class, td -> {
-                    td.text(endText);
-                    td.setBillboard(Display.Billboard.CENTER);
-                });
-                query.updateEndEntityUuid(mapName2, newEnd.getUniqueId());
+                SchedulerUtils.runTaskLater(plugin, () -> {
+                    TextDisplay newEnd = world.spawn(textDisplayLocation, TextDisplay.class, td -> {
+                        td.text(endText);
+                        td.setBillboard(Display.Billboard.CENTER);
+                    });
+                    try {
+                        new Query(plugin.getParkoursDatabase().getConnection()).updateEndEntityUuid(mapName2, newEnd.getUniqueId());
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }, 1L);
                 return;
             }
 
@@ -110,54 +121,65 @@ public class EntityRemove implements Listener {
                 int leaderboardId = (int) lineInfo.get("leaderboard_id");
                 World world = location.getWorld();
 
-                Entity newEntity;
+                SchedulerUtils.runTaskLater(plugin, () -> {
+                    Entity newEntity;
 
-                if (position == -1) {
-                    // ItemDisplay (rotating item)
-                    var displayItemConfig = ConfigManager.getFormat().getLeaderboard().getDisplayItem();
-                    Material displayMaterial = displayItemConfig.getItem();
-                    boolean enchantGlint = displayItemConfig.hasEnchantGlint();
+                    if (position == -1) {
+                        // ItemDisplay (rotating item)
+                        var displayItemConfig = ConfigManager.getFormat().getLeaderboard().getDisplayItem();
+                        Material displayMaterial = displayItemConfig.getItem();
+                        boolean enchantGlint = displayItemConfig.hasEnchantGlint();
 
-                    ItemStack item = new ItemStack(displayMaterial);
-                    ItemMeta meta = item.getItemMeta();
-                    if (enchantGlint) {
-                        meta.addEnchant(Enchantment.UNBREAKING, 1, true);
-                        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                    }
-                    item.setItemMeta(meta);
+                        ItemStack item = new ItemStack(displayMaterial);
+                        ItemMeta meta = item.getItemMeta();
+                        if (enchantGlint) {
+                            meta.addEnchant(Enchantment.UNBREAKING, 1, true);
+                            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                        }
+                        item.setItemMeta(meta);
 
-                    ItemDisplay itemDisplay = world.spawn(location, ItemDisplay.class);
-                    itemDisplay.setItemStack(item);
-                    itemDisplay.setBillboard(Display.Billboard.VERTICAL);
-                    itemDisplay.setTransformation(new Transformation(
-                            new Vector3f(0.0f, 0.0f, 0.0f),
-                            new Quaternionf(),
-                            new Vector3f(0.5f, 0.5f, 0.5f),
-                            new Quaternionf()
-                    ));
-                    newEntity = itemDisplay;
+                        ItemDisplay itemDisplay = world.spawn(location, ItemDisplay.class);
+                        itemDisplay.setItemStack(item);
+                        itemDisplay.setBillboard(Display.Billboard.VERTICAL);
+                        itemDisplay.setTransformation(new Transformation(
+                                new Vector3f(0.0f, 0.0f, 0.0f),
+                                new Quaternionf(),
+                                new Vector3f(0.5f, 0.5f, 0.5f),
+                                new Quaternionf()
+                        ));
+                        newEntity = itemDisplay;
 
-
-
-                } else {
-                    // Title (position == 0) or empty line (position > 0)
-                    Component text;
-                    if (position == 0) {
-                        String parkourName = query.getParkourNameByLeaderboard(leaderboardId);
-                        text = textFormatter.formatString(ConfigManager.getFormat().getLeaderboard().getTitle(), Map.of("parkour_name", parkourName));
                     } else {
-                        text = textFormatter.formatString(ConfigManager.getFormat().getLeaderboard().getEmptyLineStyle());
+                        // Title (position == 0) or empty line (position > 0)
+                        Component textResult;
+                        try {
+                            Query q = new Query(plugin.getParkoursDatabase().getConnection());
+                            if (position == 0) {
+                                String parkourName = q.getParkourNameByLeaderboard(leaderboardId);
+                                textResult = textFormatter.formatString(ConfigManager.getFormat().getLeaderboard().getTitle(), Map.of("parkour_name", parkourName));
+                            } else {
+                                textResult = textFormatter.formatString(ConfigManager.getFormat().getLeaderboard().getEmptyLineStyle());
+                            }
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                            textResult = Component.empty();
+                        }
+
+                        final Component text = textResult;
+                        TextDisplay textDisplay = world.spawn(location, TextDisplay.class, td -> {
+                            td.text(text);
+                            td.setBillboard(Display.Billboard.CENTER);
+                        });
+                        newEntity = textDisplay;
                     }
 
-                    TextDisplay textDisplay = world.spawn(location, TextDisplay.class, td -> {
-                        td.text(text);
-                        td.setBillboard(Display.Billboard.CENTER);
-                    });
-                    newEntity = textDisplay;
-                }
-
-                query.updateLeaderboardLineEntityUuid(uuid, newEntity.getUniqueId());
-                updater.updateCache();
+                    try {
+                        new Query(plugin.getParkoursDatabase().getConnection()).updateLeaderboardLineEntityUuid(uuid, newEntity.getUniqueId());
+                        updater.updateCache();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }, 1L);
             }
 
         } catch (SQLException ex) {

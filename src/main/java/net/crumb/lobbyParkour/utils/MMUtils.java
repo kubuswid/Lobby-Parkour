@@ -1,18 +1,15 @@
 package net.crumb.lobbyParkour.utils;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.title.Title;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 
-import java.time.Duration;
-
 public class MMUtils {
-    private static final MiniMessage mm = MiniMessage.miniMessage();
+    private static final LegacyComponentSerializer lcs = LegacyComponentSerializer.legacyAmpersand();
 
-    // Sends a player a message with the minimessage format
+    // Sends a player a message with the legacy color format
     public static void sendMessage(Player player, String message) {
-        Component parsed = mm.deserialize(message);
+        Component parsed = lcs.deserialize(message);
         player.sendMessage(parsed);
     }
 
@@ -20,25 +17,27 @@ public class MMUtils {
         Component prefix;
         Component parsed;
 
+        ConfigManager.Messages messages = ConfigManager.getMessages();
+
         switch (messageType) {
             case INFO:
-                prefix = mm.deserialize("<color:#52a3ff>ⓘ</color> ");
-                parsed = mm.deserialize("<color:#57ff65>" + message + "</color>");
+                prefix = lcs.deserialize(messages.getPrefixInfo());
+                parsed = lcs.deserialize(messages.getColorInfo() + message);
                 break;
             case WARNING:
-                prefix = mm.deserialize("<color:#ffd321>⚠</color> ");
-                parsed = mm.deserialize("<color:#ffeb7a>" + message + "</color>");
+                prefix = lcs.deserialize(messages.getPrefixWarning());
+                parsed = lcs.deserialize(messages.getColorWarning() + message);
                 break;
             case ERROR:
-                prefix = mm.deserialize("<color:#ad1f39>☒</color> ");
-                parsed = mm.deserialize("<color:#ff3358>" + message + "</color>");
+                prefix = lcs.deserialize(messages.getPrefixError());
+                parsed = lcs.deserialize(messages.getColorError() + message);
                 break;
             case DEBUG:
-                prefix = mm.deserialize("<color:##ed3ef0>?</color> ");
-                parsed = mm.deserialize("<color:#ffffff>" + message + "</color>");
+                prefix = lcs.deserialize(messages.getPrefixDebug());
+                parsed = lcs.deserialize(messages.getColorDebug() + message);
                 break;
             default:
-                player.sendMessage(mm.deserialize(message));
+                player.sendMessage(lcs.deserialize(message));
                 return;
         }
 

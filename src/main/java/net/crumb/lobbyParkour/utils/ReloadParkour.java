@@ -26,8 +26,8 @@ public class ReloadParkour {
         MMUtils.sendMessage(player, "Reloading all parkours...", MessageType.INFO);
 
         try {
-            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-            Query query = new Query(database.getConnection());
+
+            Query query = new Query(plugin.getParkoursDatabase().getConnection());
 
             List<Object[]> starts = query.getAllParkourStarts();
 

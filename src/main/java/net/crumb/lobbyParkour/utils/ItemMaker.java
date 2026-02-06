@@ -1,7 +1,8 @@
 package net.crumb.lobbyParkour.utils;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
 
 public class ItemMaker {
     private static final Logger logger = Logger.getLogger("PTZ");
-    private static final MiniMessage mm = MiniMessage.miniMessage();
+    private static final LegacyComponentSerializer lcs = LegacyComponentSerializer.legacyAmpersand();
 
     // Creates an ItemStack with the specified properties and optional right-click action.
     public static ItemStack createItem(String item, int amount, String itemName, List<String> lore) {
@@ -49,7 +50,7 @@ public class ItemMaker {
 
         // Set display name
         if (itemName != null && !itemName.trim().isEmpty()) {
-            meta.displayName(mm.deserialize("<!italic>" + itemName));
+            meta.displayName(lcs.deserialize(itemName).decoration(TextDecoration.ITALIC, false));
         } else {
             meta.setHideTooltip(true);
         }
@@ -58,7 +59,7 @@ public class ItemMaker {
         if (lore != null && !lore.isEmpty()) {
             List<Component> loreComponents = lore.stream()
                     .filter(Objects::nonNull)
-                    .map(line -> mm.deserialize("<!italic>" + line))
+                    .map(line -> lcs.deserialize(line).decoration(TextDecoration.ITALIC, false))
                     .collect(Collectors.toList());
 
             meta.lore(loreComponents);

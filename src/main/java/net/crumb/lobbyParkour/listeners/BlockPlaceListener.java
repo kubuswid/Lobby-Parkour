@@ -7,7 +7,6 @@ import net.crumb.lobbyParkour.systems.RelocateCheckpoint;
 import net.crumb.lobbyParkour.systems.RelocateSessionManager;
 import net.crumb.lobbyParkour.utils.*;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.*;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
@@ -56,8 +55,8 @@ public class BlockPlaceListener implements Listener {
                 player.getInventory().remove(item);
 
                 try {
-                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                    Query query = new Query(database.getConnection());
+
+                    Query query = new Query(plugin.getParkoursDatabase().getConnection());
 
                     if (query.parkourMaps().size() == 28) {
                         MMUtils.sendMessage(player, "You can't have more than 28 parkours!", MessageType.ERROR);
@@ -99,49 +98,16 @@ public class BlockPlaceListener implements Listener {
 
                 parkourCache.put(playerUuid, parkourData);
 
-                ItemMaker.giveItemToPlayer(player, ItemMaker.createItem("minecraft:light_weighted_pressure_plate", 1, "<green>Parkour End", Arrays.asList("<gray>Place this where you want", "<gray>your parkour to end.")), 0);
-                MMUtils.sendMessage(player, "Please place the end of your parkour. <gray>(2/3)</gray>", MessageType.INFO);
-                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
-
-                /*
-                MMUtils.sendMessage(player, "<hover:show_text:'<color:#52a3ff>✎</color> <color:#ffeb7a>Click to edit!</color>'><click:run_command:'/lpk'>A new parkour has been initialized. Do <white>/lpk</white> to edit your parkour. <gray>(You can also click this message.)</gray></click></hover>", MessageType.INFO);
-                player.getInventory().remove(item);
-
-                try {
-                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                    Query query = new Query(database.getConnection());
-
-
-                    if (query.parkourMaps().size() == 28) {
-                        MMUtils.sendMessage(player, "You can't have more than 28 parkours!", MessageType.ERROR);
-                        player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0f, 1.0f);
-                        event.setCancelled(true);
-                        return;
-                    }
-
-
-
-                    World world = player.getWorld();
-                    Location textDisplayLocation = new Location(world, location.getX() + 0.5, location.getY() + 1.0, location.getZ() + 0.5);
-                    String parkourName = "New Parkour "+dateTime;
-                    TextDisplay display = world.spawn(textDisplayLocation, TextDisplay.class, entity -> {
-                        entity.text(MiniMessage.miniMessage().deserialize("<green>⚑</green> <white>"+parkourName));
-                        entity.setBillboard(Display.Billboard.CENTER);
-                    });
-
-                    query.createParkour(parkourName, location, display.getUniqueId());
-                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-                 */
+                ItemMaker.giveItemToPlayer(player, ItemMaker.createItem("minecraft:light_weighted_pressure_plate", 1, "&aParkour End", Arrays.asList("&7Place this where you want", "&7your parkour to end.")), 0);
+                MMUtils.sendMessage(player, "Please place the end of your parkour. &7(2/3)", MessageType.INFO);
+                SoundUtils.playConfigSound(player, ConfigManager.getSounds().getClick(), 1.1f, 2.0f);
             }
             case "Parkour End" -> {
                 player.getInventory().remove(item);
 
                 try {
-                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                    Query query = new Query(database.getConnection());
+
+                    Query query = new Query(plugin.getParkoursDatabase().getConnection());
 
                     if (query.parkourMaps().size() == 28) {
                         MMUtils.sendMessage(player, "You can't have more than 28 parkours!", MessageType.ERROR);
@@ -185,18 +151,18 @@ public class BlockPlaceListener implements Listener {
 
                     query.createParkour(parkourName, startLocation, startEntityUuid, location, endEntityUuid);
                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
-                    MMUtils.sendMessage(player, "<hover:show_text:'<color:#52a3ff>✎</color> <color:#ffeb7a>Click to edit!</color>'><click:run_command:'/lpk'>A new parkour has been initialized. Do <white>/lpk</white> to edit your parkour. <gray>(You can also click this message.)</gray></click></hover>", MessageType.INFO);
-                    MMUtils.sendMessage(player, "You can now start placing checkpoints! <gray>(3/3)", MessageType.INFO);
+                    MMUtils.sendMessage(player, "<hover:show_text:'<color:#52a3ff>✎</color> <color:#ffeb7a>Click to edit!</color>'><click:run_command:'/lpk'>A new parkour has been initialized. Do &f/lpk to edit your parkour. &7(You can also click this message.)</click></hover>", MessageType.INFO);
+                    MMUtils.sendMessage(player, "You can now start placing checkpoints! &7(3/3)", MessageType.INFO);
 
                     player.getInventory().clear();
                     String actionId = player.getUniqueId() + "cancel-cp-setup";
-                    ItemStack cancelItem = ActionItemMaker.createItem("minecraft:barrier", 1, "<red>Cancel", List.of("<gray>Cancel the checkpoint setup."), actionId);
+                    ItemStack cancelItem = ActionItemMaker.createItem("minecraft:barrier", 1, "&cCancel", List.of("&7Cancel the checkpoint setup."), actionId);
                     ItemActionHandler.registerAction(actionId, p -> {
                         p.getInventory().clear();
 
                     });
 
-                    ItemStack checkpointItem = ItemMaker.createItem("minecraft:heavy_weighted_pressure_plate", 1, "<green>Checkpoint", new ArrayList<>());
+                    ItemStack checkpointItem = ItemMaker.createItem("minecraft:heavy_weighted_pressure_plate", 1, "&aCheckpoint", new ArrayList<>());
                     player.getInventory().setItem(0, checkpointItem);
                     player.getInventory().setItem(1, cancelItem);
 
@@ -238,8 +204,8 @@ public class BlockPlaceListener implements Listener {
                 int cpIndex = session.getCheckpointIndex();
 
                 try {
-                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                    Query query = new Query(database.getConnection());
+
+                    Query query = new Query(plugin.getParkoursDatabase().getConnection());
                     // Update location
                     query.updateCheckpointLocation(LocationHelper.locationToString(location), parkourId, cpIndex);
 
@@ -280,8 +246,8 @@ public class BlockPlaceListener implements Listener {
 
     private static void createNewCheckpoint(LobbyParkour plugin, String parkourName, Player player, Location location) {
         try {
-            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-            Query query = new Query(database.getConnection());
+
+            Query query = new Query(plugin.getParkoursDatabase().getConnection());
 
             int parkourId = query.getParkourIdFromName(parkourName);
             int cpIndex = query.getMaxCheckpointIndex(parkourId) + 1; // New index

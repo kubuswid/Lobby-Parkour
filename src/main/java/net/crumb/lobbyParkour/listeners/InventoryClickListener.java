@@ -65,8 +65,8 @@ public class InventoryClickListener implements Listener {
             if (displayName.equals("+ Create a new parkour")) {
                 player.getInventory().clear(0);
                 player.getOpenInventory().close();
-                MMUtils.sendMessage(player, "Please place the start of your parkour. <gray>(1/3)</gray>", MessageType.INFO);
-                ItemMaker.giveItemToPlayer(player, ItemMaker.createItem("minecraft:light_weighted_pressure_plate", 1, "<green>Parkour Start", Arrays.asList("<gray>Place this where you want", "<gray>your parkour to start.")), 0);
+                MMUtils.sendMessage(player, "Please place the start of your parkour. &7(1/3)", MessageType.INFO);
+                ItemMaker.giveItemToPlayer(player, ItemMaker.createItem("minecraft:light_weighted_pressure_plate", 1, "&aParkour Start", Arrays.asList("&7Place this where you want", "&7your parkour to start.")), 0);
             }   player.getInventory().setHeldItemSlot(0);
 
             if (displayName.equals("⚑ Parkour List")) {
@@ -100,7 +100,7 @@ public class InventoryClickListener implements Listener {
 
             if (displayName.equals("New Leaderboard")) {
                 clickedInventory.close();
-                ItemStack lbItem = ItemMaker.createItem("minecraft:name_tag", 0, "<green>Place Leaderboard", List.of("<gray>Place this where you want", "<gray>your leaderboard to be"));
+                ItemStack lbItem = ItemMaker.createItem("minecraft:name_tag", 0, "&aPlace Leaderboard", List.of("&7Place this where you want", "&7your leaderboard to be"));
                 player.getInventory().setItem(0, lbItem);
             }
 
@@ -111,8 +111,8 @@ public class InventoryClickListener implements Listener {
                 Location location = null;
 
                 try {
-                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                    Query query = new Query(database.getConnection());
+
+                    Query query = new Query(plugin.getParkoursDatabase().getConnection());
 
                     location = query.getLeaderboardLocation(leaderboardId);
                 } catch (SQLException ex) {
@@ -171,8 +171,8 @@ public class InventoryClickListener implements Listener {
 
             if (displayName.equals("Delete Parkour")) {
                 try {
-                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                    Query query = new Query(database.getConnection());
+
+                    Query query = new Query(plugin.getParkoursDatabase().getConnection());
                     Component loreLine = event.getView().getItem(10).getItemMeta().lore().get(1);
                     String name = PlainTextComponentSerializer.plainText().serialize(loreLine);
 
@@ -221,7 +221,7 @@ public class InventoryClickListener implements Listener {
                     query.deleteParkour(name);
 
                     player.getInventory().close();
-                    MMUtils.sendMessage(player, "The parkour <white>"+name+"</white> has been deleted!", MessageType.INFO);
+                    MMUtils.sendMessage(player, "The parkour &f"+name+" has been deleted!", MessageType.INFO);
 
                 } catch (SQLException ex) {
                     ex.printStackTrace();
@@ -257,8 +257,8 @@ public class InventoryClickListener implements Listener {
                 Location loc = null;
 
                 try {
-                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                    Query query = new Query(database.getConnection());
+
+                    Query query = new Query(plugin.getParkoursDatabase().getConnection());
 
                     loc = query.getStartLocation(name);
                 } catch (SQLException ex) {
@@ -268,7 +268,7 @@ public class InventoryClickListener implements Listener {
                 if (loc == null) return;
 
                 SchedulerUtils.teleport(player, loc);
-                MMUtils.sendMessage(player, "You have been teleported to the start of <white>"+name+"</white>!", MessageType.INFO);
+                MMUtils.sendMessage(player, "You have been teleported to the start of &f"+name+"!", MessageType.INFO);
             }
 
             if (displayName.equals("Place Leaderboard")) {
@@ -276,9 +276,9 @@ public class InventoryClickListener implements Listener {
                 String name = PlainTextComponentSerializer.plainText().serialize(loreLine);
                 player.getInventory().clear(0);
                 player.getOpenInventory().close();
-                ItemMaker.giveItemToPlayer(player, ItemMaker.createItem("minecraft:book", 1, "<green>Place Leaderboard", Arrays.asList("<gray>Place this where you want", "<gray>your leaderboard to be.", "", "<gray>Parkour:", "<white>" + name)), 0);
+                ItemMaker.giveItemToPlayer(player, ItemMaker.createItem("minecraft:book", 1, "&aPlace Leaderboard", Arrays.asList("&7Place this where you want", "&7your leaderboard to be.", "", "&7Parkour:", "&f" + name)), 0);
                 player.getInventory().setHeldItemSlot(0);
-                MMUtils.sendMessage(player, "Please place the leaderboard for <white>" + name + "</white> anywhere you want!", MessageType.INFO);
+                MMUtils.sendMessage(player, "Please place the leaderboard for &f" + name + " anywhere you want!", MessageType.INFO);
             }
         }
 
@@ -305,8 +305,8 @@ public class InventoryClickListener implements Listener {
 
                     // Get location of plate
                     try {
-                        ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                        Query query = new Query(database.getConnection());
+
+                        Query query = new Query(plugin.getParkoursDatabase().getConnection());
                         if (menuType == PlateType.START) {
                             loc = query.getStartLocation(PlainTextComponentSerializer.plainText().serialize(loreLine));
                         } else if (menuType == PlateType.END) {
@@ -323,8 +323,8 @@ public class InventoryClickListener implements Listener {
                         loc.getBlock().setType(material);
 
                         try {
-                            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                            Query query = new Query(database.getConnection());
+
+                            Query query = new Query(plugin.getParkoursDatabase().getConnection());
                             String currentParkour = PlainTextComponentSerializer.plainText().serialize(clickedInventory.getItem(0).lore().get(0));
 
                             if (menuType == PlateType.START) {
@@ -371,8 +371,8 @@ public class InventoryClickListener implements Listener {
                 clickedInventory.close();
 
                 try {
-                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                    Query query = new Query(database.getConnection());
+
+                    Query query = new Query(plugin.getParkoursDatabase().getConnection());
                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
 
                     // Remove the old plate and entity
@@ -386,7 +386,7 @@ public class InventoryClickListener implements Listener {
 
                     // Give the player the item
                     String plateType = query.getCheckpointType(LocationHelper.locationToString(location)).getType().getKey().toString();
-                    ItemStack checkpointItem = ItemMaker.createItem(plateType, 1, "<blue>Relocate Checkpoint", List.of("<gray>Place this where you want", "<gray>your checkpoint to be."));
+                    ItemStack checkpointItem = ItemMaker.createItem(plateType, 1, "&9Relocate Checkpoint", List.of("&7Place this where you want", "&7your checkpoint to be."));
                     player.getInventory().setItem(0, checkpointItem);
                     player.getInventory().setHeldItemSlot(0);
 
@@ -404,8 +404,8 @@ public class InventoryClickListener implements Listener {
 
             if (displayName.equals("Delete Checkpoint")) {
                 try {
-                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                    Query query = new Query(database.getConnection());
+
+                    Query query = new Query(plugin.getParkoursDatabase().getConnection());
 
                     int parkourId = query.getParkourIdByCheckpointLocation(LocationHelper.locationToString(location));
                     int checkpointIndex = query.getCheckpointIndex(LocationHelper.locationToString(location));
@@ -493,8 +493,8 @@ public class InventoryClickListener implements Listener {
                         location.getBlock().setType(material);
 
                         try {
-                            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                            Query query = new Query(database.getConnection());
+
+                            Query query = new Query(plugin.getParkoursDatabase().getConnection());
                             query.updateCheckpointType(LocationHelper.locationToString(location), plate);
 
                             CheckpointPlateType.openMenu(player, parkourName, PlateType.CHECKPOINT, location);
@@ -531,8 +531,8 @@ public class InventoryClickListener implements Listener {
                 Location location = null;
 
                 try {
-                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                    Query query = new Query(database.getConnection());
+
+                    Query query = new Query(plugin.getParkoursDatabase().getConnection());
                     int parkourId = query.getParkourIdFromName(parkourName);
                     location = query.getCheckpointLocation(parkourId, checkpointIndex);
                 } catch (SQLException ex) {
@@ -556,13 +556,13 @@ public class InventoryClickListener implements Listener {
                 cache.put(player.getUniqueId(), parkourName);
 
                 String actionId = player.getUniqueId() + "cancel-cp-setup";
-                ItemStack cancelItem = ActionItemMaker.createItem("minecraft:barrier", 1, "<red>Cancel", List.of("<gray>Cancel the checkpoint setup."), actionId);
+                ItemStack cancelItem = ActionItemMaker.createItem("minecraft:barrier", 1, "&cCancel", List.of("&7Cancel the checkpoint setup."), actionId);
                 ItemActionHandler.registerAction(actionId, p -> {
                     p.getInventory().clear();
                     getNewCheckpointsCache().remove(player.getUniqueId());
                 });
 
-                ItemStack checkpointItem = ItemMaker.createItem("minecraft:heavy_weighted_pressure_plate", 1, "<green>Checkpoint", new ArrayList<>());
+                ItemStack checkpointItem = ItemMaker.createItem("minecraft:heavy_weighted_pressure_plate", 1, "&aCheckpoint", new ArrayList<>());
                 player.getInventory().setItem(0, checkpointItem);
                 player.getInventory().setItem(1, cancelItem);
             }

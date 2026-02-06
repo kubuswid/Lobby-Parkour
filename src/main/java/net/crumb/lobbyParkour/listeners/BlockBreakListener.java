@@ -29,8 +29,7 @@ public class BlockBreakListener implements Listener {
         Location aboveLocation = blockLocation.clone().add(0, 1, 0);
 
         try {
-            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-            Query query = new Query(database.getConnection());
+            Query query = new Query(plugin.getParkoursDatabase().getConnection());
 
             List<Location> checkLocations = List.of(blockLocation, aboveLocation);
 
@@ -42,7 +41,7 @@ public class BlockBreakListener implements Listener {
                     if (startLoc != null && startLoc.equals(loc)) {
                         e.setCancelled(true);
                         if (e.getPlayer().hasPermission("lpk.admin")) {
-                            MMUtils.sendMessage(e.getPlayer(), "You cannot break this block! If you wish to delete this parkour please use <hover:show_text:'<color:#52a3ff>✎</color> <color:#ffeb7a>Click to use!</color>'><click:run_command:'/lpk'><white>/lpk</white></click></hover>!", MessageType.WARNING);
+                            MMUtils.sendMessage(e.getPlayer(), "You cannot break this block! If you wish to delete this parkour please use &f/lpk&e!", MessageType.WARNING);
                         }
                         return;
                     }
@@ -55,7 +54,7 @@ public class BlockBreakListener implements Listener {
                     if (endLoc != null && endLoc.equals(loc)) {
                         e.setCancelled(true);
                         if (e.getPlayer().hasPermission("lpk.admin")) {
-                            MMUtils.sendMessage(e.getPlayer(), "You cannot break this block! If you wish to delete this parkour please use <hover:show_text:'<color:#52a3ff>✎</color> <color:#ffeb7a>Click to use!</color>'><click:run_command:'/lpk'><white>/lpk</white></click></hover>!", MessageType.WARNING);
+                            MMUtils.sendMessage(e.getPlayer(), "You cannot break this block! If you wish to delete this parkour please use &f/lpk&e!", MessageType.WARNING);
                         }
                         return;
                     }
@@ -64,7 +63,7 @@ public class BlockBreakListener implements Listener {
                 if (query.isCheckpoint(loc)) {
                     e.setCancelled(true);
                     if (e.getPlayer().hasPermission("lpk.admin")) {
-                        MMUtils.sendMessage(e.getPlayer(), "You cannot break this block! If you wish to delete this parkour please use <hover:show_text:'<color:#52a3ff>✎</color> <color:#ffeb7a>Click to use!</color>'><click:run_command:'/lpk'><white>/lpk</white></click></hover>!", MessageType.WARNING);
+                        MMUtils.sendMessage(e.getPlayer(), "You cannot break this block! If you wish to delete this parkour please use &f/lpk&e!", MessageType.WARNING);
                     }
                     return;
                 }

@@ -55,8 +55,8 @@ public class PlayerInteractListener implements Listener {
             String parkourName;
 
             try {
-                ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                Query query = new Query(database.getConnection());
+
+                Query query = new Query(plugin.getParkoursDatabase().getConnection());
 
                 List<Object[]> pkStarts = query.getAllParkourStarts();
                 boolean isPkStart = pkStarts.stream().anyMatch(entry -> (entry[1]).equals(location));
@@ -138,8 +138,8 @@ public class PlayerInteractListener implements Listener {
                 String parkourName = "";
 
                 try {
-                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                    Query query = new Query(database.getConnection());
+
+                    Query query = new Query(plugin.getParkoursDatabase().getConnection());
 
                     List<Object[]> pkStarts = query.getAllParkourStarts();
                     isPkStart = pkStarts.stream().anyMatch(entry -> (entry[1]).equals(location));
@@ -188,8 +188,8 @@ public class PlayerInteractListener implements Listener {
                         List<String> emptyLore = new ArrayList<>();
 
                         try {
-                            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                            Query query = new Query(database.getConnection());
+
+                            Query query = new Query(plugin.getParkoursDatabase().getConnection());
                             int parkourId = query.getParkourIdFromName(parkourName);
                             int checkpointCount = query.getCheckpoints(parkourId).size();
                             session.setMaxCheckpoints(checkpointCount);
@@ -235,8 +235,8 @@ public class PlayerInteractListener implements Listener {
                         ItemActionHandler.registerAction(lastCheckpointActionId, p -> {
                             int lastIndex = ParkourSessionManager.getSessions().get(player.getUniqueId()).getLastReachedCheckpointIndex();
                             try {
-                                ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                                Query query = new Query(database.getConnection());
+
+                                Query query = new Query(plugin.getParkoursDatabase().getConnection());
                                 Location loc = null;
                                 int parkourId = query.getParkourIdFromName(finalParkourName);
                                 if (lastIndex != 0) {
@@ -253,9 +253,9 @@ public class PlayerInteractListener implements Listener {
                         });
 
                         // Create parkour items
-                        ItemStack restItem = ActionItemMaker.createItem("minecraft:oak_door", 1, "<red>Reset", emptyLore, resetPkActionId);
-                        ItemStack leaveItem = ActionItemMaker.createItem("minecraft:red_bed", 1, "<red>Leave", emptyLore, leavePkActionId);
-                        ItemStack lastCpItem = ActionItemMaker.createItem("minecraft:heavy_weighted_pressure_plate", 1, "<green>Last Checkpoint", emptyLore, lastCheckpointActionId);
+                        ItemStack restItem = ActionItemMaker.createItem("minecraft:oak_door", 1, "&cReset", emptyLore, resetPkActionId);
+                        ItemStack leaveItem = ActionItemMaker.createItem("minecraft:red_bed", 1, "&cLeave", emptyLore, leavePkActionId);
+                        ItemStack lastCpItem = ActionItemMaker.createItem("minecraft:heavy_weighted_pressure_plate", 1, "&aLast Checkpoint", emptyLore, lastCheckpointActionId);
 
                         // Save inventory before clearing
                         Map<Integer, ItemStack> saveInventory = new HashMap<>();
@@ -301,8 +301,8 @@ public class PlayerInteractListener implements Listener {
                         restoreInventory(player, session);
 
                         try {
-                            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                            Query query = new Query(database.getConnection());
+
+                            Query query = new Query(plugin.getParkoursDatabase().getConnection());
                             int id = query.getParkourIdFromName(parkourName);
                             query.saveTime(player.getUniqueId(), id, timerMillis);
                             updater.updateTimes(id);
@@ -332,8 +332,8 @@ public class PlayerInteractListener implements Listener {
 
                         // Get the index of the stepped pressure plate
                         try {
-                            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                            Query query = new Query(database.getConnection());
+
+                            Query query = new Query(plugin.getParkoursDatabase().getConnection());
 
                             int checkpointIndex = query.getCheckpointIndex(LocationHelper.locationToString(location));
 

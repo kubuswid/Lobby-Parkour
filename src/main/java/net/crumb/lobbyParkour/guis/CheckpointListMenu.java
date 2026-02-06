@@ -5,7 +5,7 @@ import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
 import net.crumb.lobbyParkour.utils.ItemMaker;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -18,18 +18,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CheckpointListMenu {
-    private static final MiniMessage miniMessage = MiniMessage.miniMessage();
+    private static final LegacyComponentSerializer lcs = LegacyComponentSerializer.legacyAmpersand();
     private static final LobbyParkour plugin = LobbyParkour.getInstance();
 
     public static void openMenu(Player player, String parkourName) {
         if (!player.hasPermission("lpk.admin")) return;
-        Inventory gui = Bukkit.createInventory(null, 9 * 6, miniMessage.deserialize("<bold><gradient:#2200cc:#5e43e6>Checkpoint List<reset>"));
+        Inventory gui = Bukkit.createInventory(null, 9 * 6, lcs.deserialize("&9&lCheckpoint List"));
         List<String> emptyLore = new ArrayList<>();
 
         ItemStack background = ItemMaker.createItem("minecraft:blue_stained_glass_pane", 1, "", emptyLore);
-        ItemStack backArrow = ItemMaker.createItem("minecraft:arrow", 1, "<green>Back", List.of("<gray>Previous page"));
-        ItemStack closeButton = ItemMaker.createItem("minecraft:barrier", 1, "<red>Close", emptyLore);
-        ItemStack newCheckpointButton = ItemMaker.createItem("minecraft:heavy_weighted_pressure_plate", 1, "<green>New Checkpoint", List.of("<gray>Setup a new checkpoint", "<yellow>Click to setup!"));
+        ItemStack backArrow = ItemMaker.createItem("minecraft:arrow", 1, "&aBack", List.of("&7Previous page"));
+        ItemStack closeButton = ItemMaker.createItem("minecraft:barrier", 1, "&cClose", emptyLore);
+        ItemStack newCheckpointButton = ItemMaker.createItem("minecraft:heavy_weighted_pressure_plate", 1, "&aNew Checkpoint", List.of("&7Setup a new checkpoint", "&eClick to setup!"));
 
         // Make secret info item
         ItemStack secretItem = new ItemStack(Material.BLUE_STAINED_GLASS_PANE, 1);
@@ -62,8 +62,7 @@ public class CheckpointListMenu {
         gui.setItem(0, secretItem);
 
         try {
-            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-            Query query = new Query(database.getConnection());
+            Query query = new Query(plugin.getParkoursDatabase().getConnection());
             int parkourId = query.getParkourIdFromName(parkourName);
             List<Object[]> checkpoints = query.getCheckpoints(parkourId);
 
@@ -83,7 +82,7 @@ public class CheckpointListMenu {
             for (Object[] cp : checkpoints) {
                 if (index >= contentSlots.length) break;
 
-                ItemStack mapItem = ItemMaker.createItem("minecraft:heavy_weighted_pressure_plate", 1, "<blue>Checkpoint <gray>#" + String.valueOf((Integer) cp[1]), List.of("<yellow>Click to manage!"));
+                ItemStack mapItem = ItemMaker.createItem("minecraft:heavy_weighted_pressure_plate", 1, "&9Checkpoint &7#" + String.valueOf((Integer) cp[1]), List.of("&eClick to manage!"));
                 gui.setItem(contentSlots[index], mapItem);
                 index++;
             }

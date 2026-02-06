@@ -1,7 +1,8 @@
 package net.crumb.lobbyParkour.guis;
 
+import net.crumb.lobbyParkour.utils.ConfigManager;
 import net.crumb.lobbyParkour.utils.ItemMaker;
-import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -13,22 +14,22 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MainMenu {
-    private static final MiniMessage miniMessage = MiniMessage.miniMessage();
+    private static final LegacyComponentSerializer lcs = LegacyComponentSerializer.legacyAmpersand();
 
 
     public static void openMenu(Player player) {
         if (!player.hasPermission("lpk.admin")) return;
-        Inventory gui = Bukkit.createInventory(null, 9 * 3, miniMessage.deserialize("         <bold><gradient:#d81bf5:#fa2dc3>ʟᴏʙʙʏ ᴘᴀʀᴋᴏᴜʀ</gradient>"));
+        Inventory gui = Bukkit.createInventory(null, 9 * 3, lcs.deserialize("         &d&lʟᴏʙʙʏ ᴘᴀʀᴋᴏᴜʀ"));
         List<String> emptyLore = new ArrayList<>();
 
         ItemStack backgroundDark = ItemMaker.createItem("minecraft:purple_stained_glass_pane", 1, "", emptyLore);
         ItemStack backgroundNormal = ItemMaker.createItem("minecraft:magenta_stained_glass_pane", 1, "", emptyLore);
         ItemStack backgroundLight = ItemMaker.createItem("minecraft:pink_stained_glass_pane", 1, "", emptyLore);
 
-        ItemStack parkourList = ItemMaker.createItem("minecraft:paper", 1, "<green>⚑ <green>Parkour List", Arrays.asList("<gray>Manage your parkour courses", "<yellow>Click to view!"));
-        ItemStack newParkour = ItemMaker.createItem("minecraft:light_weighted_pressure_plate", 1, "<green><bold>+ <reset><!italic><green>Create a new parkour", Arrays.asList("<gray>Setup a new parkour course", "<yellow>Click to setup!"));
-        ItemStack parkourLeaderboard = ItemMaker.createItem("minecraft:name_tag", 1, "<green>✯ Parkour Leaderboards", Arrays.asList("<gray>Setup a parkour leaderboard", "<yellow>Click to manage!"));
-        ItemStack reloadParkours = ItemMaker.createItem("minecraft:clock", 1, "<green>🔁 Reload Parkours", Arrays.asList("<gray>Reload all parkours on the server", "<yellow>Click to reload!"));
+        ItemStack parkourList = ItemMaker.createItem("minecraft:paper", 1, "&a⚑ &aParkour List", Arrays.asList("&7Manage your parkour courses", "&eClick to view!"));
+        ItemStack newParkour = ItemMaker.createItem("minecraft:light_weighted_pressure_plate", 1, "&a&l+ &aCreate a new parkour", Arrays.asList("&7Setup a new parkour course", "&eClick to setup!"));
+        ItemStack parkourLeaderboard = ItemMaker.createItem("minecraft:name_tag", 1, "&a✯ Parkour Leaderboards", Arrays.asList("&7Setup a parkour leaderboard", "&eClick to manage!"));
+        ItemStack reloadParkours = ItemMaker.createItem("minecraft:clock", 1, "&a🔁 Reload Parkours", Arrays.asList("&7Reload all parkours on the server", "&eClick to reload!"));
 
         gui.setItem(0, backgroundDark);
         gui.setItem(1, backgroundDark);
@@ -62,6 +63,11 @@ public class MainMenu {
         gui.setItem(16, reloadParkours);
 
         player.openInventory(gui);
-        player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 0.8f, 1.0f);
+        try {
+            Sound sound = Sound.valueOf(ConfigManager.getSounds().getChestOpen());
+            player.playSound(player.getLocation(), sound, 0.8f, 1.0f);
+        } catch (IllegalArgumentException ignored) {
+            player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 0.8f, 1.0f);
+        }
     }
 }
